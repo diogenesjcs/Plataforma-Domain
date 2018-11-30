@@ -13,13 +13,9 @@ class ApiCore(Component):
         core_services = self.config["core_services"]
         url = f"{core_services['scheme']}://{core_services['host']}:{core_services['port']}/core/{entity}"
 
-        query_string = ""
         if params:
-            query_string = "?"
-            for k,v in params.items():
-                query_string += str(k) + "=" + str(v) + "&"
+            url += "?"+ str.join("&", [f"{k}={v}" for k,v in params.items()])
 
-        url += query_string
         return url
 
     def get(self, entity, params):
