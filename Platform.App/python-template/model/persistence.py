@@ -78,7 +78,7 @@ class Persistence(Component):
         result += list(self.recover(to_recover,scope))
         self.destroy(to_destroy,scope)
         return result
-    
+		
     def persist_bulk(self, objs,scope):
         self.link_branch(objs)
         to_create = []
@@ -88,9 +88,9 @@ class Persistence(Component):
             if self.is_to_create(o):
                 to_create.append(o)
         result = list(self.build_instance_bulk_create(to_create))
-        self.session.bulk_save_objects(result)
-        return result
 
+        return result
+		  
     def create(self, objs):
         for o in objs:
             _type = o["_metadata"]["type"].lower()
@@ -104,7 +104,7 @@ class Persistence(Component):
             instance.rid = rid
             self.session.add(instance)
             yield instance
-    
+
     def build_instance_bulk_create(self, objs):
         for o in objs:
             _type = o["_metadata"]["type"].lower()

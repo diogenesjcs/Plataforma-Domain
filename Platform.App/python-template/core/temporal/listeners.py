@@ -49,3 +49,23 @@ def before_flush(session, flush_context, instances):
         temporal_structures.append(clock)
 
     session.add_all(temporal_structures)
+
+def addTemporal(session,instances):
+    temporal_structures_clock = []
+    temporal_structures_history = []
+
+    for entity in instances:
+        clock, _ = session.create_clock_bulk(entity)
+
+        for field in entity.Temporal.fields:
+            history, history_created = session.create_field_history_bulk(
+            entity, field, clock,None)
+            temporal_structures_history.append(history)
+
+        clock.ticks = 1
+        temporal_structures_clock.append(clock)
+
+    session.bulk_save_objects(temporal_structures_clock)
+    session.commit()
+    session.bulk_save_objects(temporal_structures_history)
+    session.commit()
