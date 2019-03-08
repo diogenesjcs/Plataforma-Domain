@@ -29,7 +29,6 @@ class TemporalSession(orm.session.Session):
         clock.effective = period
         clock.entity_id = entity.rid
         clock.ticks = 0
-        #  self.add(clock)
         return clock, True
 
     def get_or_create_clock(self, entity, period=effective_now()):
@@ -64,7 +63,6 @@ class TemporalSession(orm.session.Session):
         history.clock_id = clock.rid
         history.ticks = pg_extras.NumericRange(clock.ticks+1)
         history.value = getattr(entity, field)
-        #  self.add(history)
         return history, True
 
     def get_or_create_field_history(self, entity, field, clock):

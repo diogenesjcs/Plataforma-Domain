@@ -83,12 +83,8 @@ class Persistence(Component):
         self.link_branch(objs)
         to_create = []
         for o in objs:
-            if not self.is_valid_changed_obj(o):
-                continue
-            if self.is_to_create(o):
-                to_create.append(o)
+            to_create.append(o)
         result = list(self.build_instance_bulk_create(to_create))
-
         return result
 		  
     def create(self, objs):
@@ -108,9 +104,6 @@ class Persistence(Component):
     def build_instance_bulk_create(self, objs):
         for o in objs:
             _type = o["_metadata"]["type"].lower()
-            #rid = o["_metadata"].get("rid",None)
-            #if not rid:
-            #    log.info("rid not pass will be created a new one")
             rid = uuid4()
             instance = globals()[_type](**o)
             instance.modified = datetime.utcnow()

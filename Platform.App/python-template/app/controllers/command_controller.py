@@ -11,7 +11,7 @@ from core.component import Component
 from utils.pruu import log_on_pruu
 from model.batch import BatchPersistence
 from drop_branch import DropBranch
-from core.temporal.listeners import addTemporal
+from core.temporal.utils import addTemporal
 
 class CommandController(Component):
     """ Command Controller persist data on domain """
@@ -54,6 +54,7 @@ class CommandController(Component):
         instances = self.repository.persist_bulk(domain_obj,'execution')
         self.repository.session.bulk_save_objects(instances)
         addTemporal(self.repository.session,instances)
+        self.repository.commit()
         return self.from_domain(instances)
 
     def to_domain(self):
