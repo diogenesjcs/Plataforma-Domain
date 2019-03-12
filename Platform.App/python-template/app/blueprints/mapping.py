@@ -80,6 +80,20 @@ def persist_map(app_id):
         r = {"status_code": 400, "message": str(excpt)}
         return jsonify(r), 400
 
+@mapping.route("/<app_id>/insert_bulk", methods=['POST'])
+def insert_bulk_map(app_id):
+    """ Insert data in bulk on domain """
+    instance_id = request.headers.get('Instance-Id')
+    process_id = request.headers.get('Process-Id')
+    reference_date = request.headers.get('Reference-Date')
+    body = json.loads(request.data)
+    controller = CommandController(app_id, body, instance_id, reference_date, process_id)
+    try:
+        return jsonify(controller.persist_bulk())
+    except Exception as excpt:
+        r = {"status_code": 400, "message": str(excpt)}
+        return jsonify(r), 400
+
 @mapping.route("/instance/<process_instance>/persist", methods=['POST'])
 def persist_entities_by_process_instance(process_instance):
     controller = CommandController(None, None, None, None, None)
