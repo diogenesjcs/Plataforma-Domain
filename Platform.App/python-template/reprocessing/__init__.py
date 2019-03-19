@@ -10,7 +10,6 @@ from uuid import uuid4
 import copy
 import hashlib
 import json
-from utils.pruu import log_on_pruu
 import log
 
 class ReprocessingManager:

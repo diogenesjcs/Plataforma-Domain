@@ -8,7 +8,6 @@ from flask import request
 import log
 import copy
 from core.component import Component
-from utils.pruu import log_on_pruu
 from model.batch import BatchPersistence
 from drop_branch import DropBranch
 from core.temporal.utils import addTemporal
