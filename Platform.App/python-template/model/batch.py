@@ -2,7 +2,6 @@ from model.persistence import Persistence
 from model.domain import *
 from sdk import process_memory, event_manager, process_instance, domain_dependency
 from mapper.builder import MapBuilder
-from dateutil import parser
 from datetime import datetime
 from reprocessing import ReprocessingManager
 from sdk import operation

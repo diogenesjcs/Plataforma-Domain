@@ -3,7 +3,6 @@ from reprocessing import ReprocessingManager
 import json
 from mapper.builder import MapBuilder
 from database import create_session
-from dateutil import parser
 from flask import request
 import log
 import copy
