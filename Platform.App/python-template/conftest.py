@@ -34,7 +34,7 @@ def load_db_container():
         auto_remove=True,
         detach=True,
         ports={'5432/tcp': '5432'},
-        environment=['POSTGRES_USER=test_user', 'POSTGRES_PASSWORD=passwd'],
+        environment=[f'POSTGRES_USER={SETTINGS.DB_USER}', f'POSTGRES_PASSWORD={SETTINGS.DB_PASSWORD}'],
     )
 
     # waiting for the container to be up and set.
