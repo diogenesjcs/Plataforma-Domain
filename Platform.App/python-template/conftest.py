@@ -38,7 +38,7 @@ def load_db_container():
     )
 
     # waiting for the container to be up and set.
-    time.sleep(2)
+    time.sleep(3)
     return container
 
 @pytest.fixture(scope='session')
