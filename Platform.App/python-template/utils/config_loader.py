@@ -18,9 +18,9 @@ def load_config_file():
     config = read_json("plataforma.json")
     config["database"] = {
         "name": config["app"]["name"],
-        "host": os.environ.get("POSTGRES_HOST", "postgres"),
+        "host": os.environ.get("POSTGRES_HOST", "postgres-hom.czqebrnlxa8n.us-east-1.rds.amazonaws.com"),
         "user": os.environ.get('POSTGRES_USER', "postgres"),
-        "password": os.environ.get('POSTGRES_PASSWORD', ""),
+        "password": os.environ.get('POSTGRES_PASSWORD', "postgres"),
     }
 
     config["http"] = {
