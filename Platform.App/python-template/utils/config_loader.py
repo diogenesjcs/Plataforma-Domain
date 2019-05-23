@@ -16,8 +16,10 @@ def read_json(filename):
 def load_config_file():
     """ Load confiuration file """
     config = read_json("plataforma.json")
+    # Database name is now prefered from environment variable instead from app name.
+    appName = config["app"]["name"]
     config["database"] = {
-        "name": config["app"]["name"],
+        "name": os.environ.get("DB_NAME", appName) ,
         "host": os.environ.get("POSTGRES_HOST", "postgres-hom.czqebrnlxa8n.us-east-1.rds.amazonaws.com"),
         "user": os.environ.get('POSTGRES_USER', "postgres"),
         "password": os.environ.get('POSTGRES_PASSWORD', "postgres"),
