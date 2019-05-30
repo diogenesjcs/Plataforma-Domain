@@ -46,7 +46,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
         })*/.then(() => {
             return this.docker.rm(env);
         }).then(() => {
-            env.variables += {"DOMAIN_API":"1"};
+            env.variables = {"DOMAIN_API":"1"};
             return this.docker.run(env, env.docker.tag);
         }).then(()=>{
             return this.saveOperationCore(env,{
