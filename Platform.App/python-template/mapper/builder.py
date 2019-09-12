@@ -10,7 +10,7 @@ class MapBuilder:
     loaded_at = datetime.datetime.now()
     cache_enable = True
     def build(self):
-        if not MapBuilder.cache_enable or (not MapBuilder.loaded or (datetime.datetime.now() - MapBuilder.loaded_at).seconds > 10):
+        if not MapBuilder.cache_enable or not MapBuilder.loaded:
             maps = Loader().build()
             index = Index()
             index.parse(maps)

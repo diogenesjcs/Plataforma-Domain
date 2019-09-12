@@ -1,5 +1,5 @@
 from model.query import Query
-
+import log
 
 class QueryService:
     def __init__(self, reference_date, version, session, branch='master'):

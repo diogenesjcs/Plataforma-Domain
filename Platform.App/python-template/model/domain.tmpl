@@ -45,15 +45,15 @@ class {{@key}}(Base, TemporalModelMixin):
         fields = ('deleted','modified','created_at', 'meta_instance_id', 'from_id', 'branch', {{#join . ","}}'{{{name}}}'{{/join}}, )
 
     {{#each . }}
-    {{{@key}}} = Column({{{type}}})
+    {{{@key}}} = Column({{{type}}}{{#if isId}},index=True{{/if}})
     {{/each}}
 
-    id = Column(sap.UUID(as_uuid=True), default=uuid4)
+    id = Column(sap.UUID(as_uuid=True), default=uuid4, index=True)
     deleted = Column(sap.BOOLEAN(), default=False)
     meta_instance_id = Column(sap.UUID(as_uuid=True))
     modified = Column(DateTime(), default=datetime.utcnow())
     created_at = Column(DateTime(), default=datetime.utcnow())
-    branch = Column(String(), default='master')
+    branch = Column(String(), default='master',index=True)
     from_id = Column(sap.UUID(as_uuid=True), nullable=True)
 
 {{/each}}

@@ -80,10 +80,15 @@ module.exports = (function () {
         tables.forEach(t => {
             self.compileTable(self.model.tables[t]);
         });
-
+        
         var source = fs.readFileSync(root + "python-template/model/domain.tmpl").toString();
         var template = Handlebars.compile(source);
         var obj = { "database_name": appName, "model": self.sequelizeModel, "relations": self.model.relationships };
+        Object.keys(obj.model).forEach(function(key){
+            Object.keys(obj.model[key]).forEach(function(key2){
+                obj.model[key][key2]["isId"] = obj.model[key][key2]["name"].indexOf("id_")==0;
+            });
+         });
         var compiled = template(obj);
         return compiled;
     };
