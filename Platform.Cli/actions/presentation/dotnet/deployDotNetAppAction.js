@@ -20,8 +20,8 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 .then(context => this.registerSolution(context))
                 .then(context => this.registerApp(context));
         }
-        prep = prep.then(context => this.uploadMaps(context))
-            .then(context => this.uploadMetadata(context));
+        prep = prep.then(context => this.uploadMetadata(context))
+        .then(context => this.uploadMaps(context));
         prep.then(this.finalize).catch(this.onError);
     }
 
@@ -29,7 +29,7 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
         var promise = new Promise((resolve, reject) => {
             console.log("[.Net Temp Version] Preparing Deploy");
             var path = os.homedir() + "/installed_plataforma";
-            var fullPath = path+"/apps/"+env.conf.app.version+"_"+env.conf.app.id;
+            var fullPath = path + "/apps/" + env.conf.app.version + "_" + env.conf.app.id;
             env.conf.fullPath = fullPath;
             env.conf.path = path;
             env.conf.appPath = process.cwd();
@@ -49,9 +49,9 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
 
                 shell.rm("-rf", dest);
                 shell.mkdir("-p", dest);
-                shell.cp("-R",source+"/Mapa", dest + "/Mapa");
-                shell.cp("-R",source+"/Metadados", dest + "/Metadados");
-                shell.cp(source+"/Dockerfile", dest);
+                shell.cp("-R", source + "/Mapa", dest + "/Mapa");
+                shell.cp("-R", source + "/Metadados", dest + "/Metadados");
+                shell.cp(source + "/Dockerfile", dest);
 
                 resolve(env);
             } catch (e) {
@@ -76,11 +76,11 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                     shell.exec(`ng build --configuration=production --base-href /${dockerName}/ --deploy-url /${dockerName}/`);
                     shell.cd("..");
                 }
-                
-                var cmdPublish = `dotnet publish ${source}/Server/${webAppName}.Web/${webAppName}.Web.csproj -o ${dest}/Server`; 
+
+                var cmdPublish = `dotnet publish ${source}/Server/${webAppName}.Web/${webAppName}.Web.csproj -o ${dest}/Server`;
                 console.log(cmdPublish);
                 shell.exec(cmdPublish);
-                
+
                 resolve(env);
             } catch (e) {
                 reject(e);
@@ -90,7 +90,45 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
     }
 
     uploadMaps(env) {
-        return this.getFiles(env, "Mapa", (ctx, v) => this.saveMapToCore(ctx, v));
+        var pathMap = env.conf.appPath + "/Mapa/";
+        var fileList = shell.ls(pathMap);
+        return this.importMapToDomain(pathMap,fileList);
+    }
+
+    importMapToDomain(actualPath,files) {
+        return this.getDomainSchema(actualPath,files).then(([actualPath, mapNames]) => this.importDomainMap(actualPath, mapNames));
+    }
+
+    getDomainSchema(actualPath,mapNames) {
+        return new Promise((resolve, reject) => {
+            var path = os.homedir() + "/installed_plataforma/domain_schema";
+            if (fs.existsSync(path)) {
+                shell.cd(path);
+                shell.exec("git pull");
+            } else {
+                shell.rm("-rf", path);
+                shell.mkdir(path);
+                shell.cd(path);
+                shell.cd(" ..");
+                shell.exec("git clone https://github.com/onsplatform/domain_schema.git");
+            }
+            resolve([actualPath, mapNames]);
+        })
+    }
+
+    importDomainMap(actualPath, mapNames) {
+        const mapName = mapNames[0];
+        return new Promise((resolve, reject) => {
+            var path = os.homedir() + "/installed_plataforma/domain_schema";
+            shell.cd(path);
+            shell.exec("pip install pipenv");
+            shell.exec("pipenv install");
+            shell.exec("set POSTGRES_HOST=localhost");
+            shell.exec("pipenv install pyyaml");
+            shell.exec("echo POSTGRES_HOST=localhost >.env");
+            shell.exec("pipenv run python manage.py import_map " + actualPath + "/" + mapName + " sager " + mapName.split(".")[0]);
+            resolve();
+        })
     }
 
     uploadMetadata(env) {
@@ -147,7 +185,7 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 operation.event_out = `${operation.name}.done`;
                 operation.image = this.docker.getContainer(env);
                 env.image = operation.image;
-                this.saveOperationCore(env,operation).then((c)=>{
+                this.saveOperationCore(env, operation).then((c) => {
                     resolve(env);
                 })
             } catch (e) {
@@ -164,24 +202,24 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
             process.type = env.conf.app.type;
             process.relativePath = env.conf.fullPath;
             process.deployDate = new Date();
-            
+
             process.tag = this.docker.getContainer(env);
             shell.cd(process.relativePath);
             this.docker.build(env, process.tag).then((r) => {
                 //console.log("Docker publish...");
                 //this.docker.publish(env, process.tag).then(() => {
                 this.saveProcessToCore(env, process).then(() => {
-                    if (env.conf.app.type === "presentation"){
-                        env.docker = {port:"8087"};
+                    if (env.conf.app.type === "presentation") {
+                        env.docker = { port: "8087" };
                         console.log("presentation app should start app");
-                        this.docker.rm(env).then(()=>{
+                        this.docker.rm(env).then(() => {
                             env.variables = {};
                             env.variables["API_MODE"] = true;
                             env.variables["SYSTEM_ID"] = env.conf.solution.id;
                             env.variables["PROCESS_ID"] = env.conf.app.id;
                             this.docker.run(env, process.tag).then(r => resolve(env));
                         });
-                    }else{
+                    } else {
                         resolve(env);
                     }
                 }).catch(reject);
