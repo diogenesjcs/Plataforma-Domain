@@ -22,7 +22,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
         this.compiler = new CompileAppAction(appInstance);
     }
     deploy(_env) {
-        this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(actualPath));
+        this.saveSystem(_env).then(this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(actualPath)));
     }
 
     getDomainSchema() {
@@ -41,6 +41,21 @@ module.exports = class DeployAppAction extends BaseDeployAction {
             }
             resolve(actualPath);
         })
+    }
+
+    saveSystem(env) {
+        return new Promise((resolve,reject)=>{
+        var systemCore  = new System(env.apiCore)
+            systemCore.findById(env.conf.solution.id).then(found =>{
+                if (found.length === 0) {
+                    systemCore.create(env.conf.solution).then(()=>{
+                        resolve(env)
+                    }).catch(reject)
+                }else{
+                    resolve(env)
+                }
+            }).catch(reject)
+        });
     }
 
     importDomainMetadata(actualPath) {

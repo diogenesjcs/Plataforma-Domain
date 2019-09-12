@@ -21,7 +21,8 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 .then(context => this.registerApp(context));
         }
         prep = prep.then(context => this.uploadMetadata(context))
-        .then(context => this.uploadMaps(context));
+        .then(context=>this.uploadMaps(context))
+        .then(context => this.uploadMapsDomain(context));
         prep.then(this.finalize).catch(this.onError);
     }
 
@@ -90,6 +91,10 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
     }
 
     uploadMaps(env) {
+        return this.getFiles(env, "Mapa", (ctx, v) => this.saveMapToCore(ctx, v));
+    }
+
+    uploadMapsDomain(env) {
         var pathMap = env.conf.appPath + "/Mapa/";
         var fileList = shell.ls(pathMap);
         return this.importMapToDomain(pathMap,fileList);
