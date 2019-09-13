@@ -101,6 +101,50 @@ module.exports = class BaseDeployAction{
         })
     }
 
+    getDomainSchema(actualPath, mapNames) {
+        console.log("Preparing domain schema.");
+        return new Promise((resolve, reject) => {
+            try {
+                var path = os.homedir() + "/installed_plataforma/domain_schema";
+                if (fs.existsSync(path)) {
+                    shell.cd(path);
+                    shell.exec("git pull");
+                } else {
+                    shell.rm("-rf", path);
+                    shell.mkdir(path);
+                    shell.cd(path);
+                    shell.cd(" ..");
+                    shell.exec("git clone https://github.com/onsplatform/domain_schema.git");
+                }
+                resolve([actualPath, mapNames]);
+            }
+            catch (e) {
+                reject(e);
+            }
+        })
+    }
+
+    importDomainMap(actualPath, mapNames) {
+        console.log("Importing maps.");
+        return new Promise((resolve, reject) => {
+            try {
+                const mapName = mapNames[0];
+                var path = os.homedir() + "/installed_plataforma/domain_schema";
+                shell.cd(path);
+                shell.exec("pip install pipenv");
+                shell.exec("pipenv install");
+                shell.exec("set POSTGRES_HOST=localhost");
+                shell.exec("pipenv install pyyaml");
+                shell.exec("echo POSTGRES_HOST=localhost >.env");
+                shell.exec("pipenv run python manage.py import_map " + actualPath + "/" + mapName + " sager " + mapName.split(".")[0]);
+                resolve();
+            }
+            catch (e) {
+                reject(e);
+            }
+        })
+    }
+
     saveOperationCore(env,operation){
         var operationCore = new OperationCore({scheme:env.apiCore.scheme, host:env.apiCore.host,port:env.apiCore.port});
         var promise = new Promise((resolve,reject)=>{

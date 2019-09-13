@@ -5,12 +5,8 @@ const DockerService = require("../../services/docker");
 const PortsService = require("../../services/ports");
 const shell = require("shelljs");
 const os = require("os");
-const InstalledAppCore = require("plataforma-sdk/services/api-core/installedApp");
-const DomainModelCore = require("plataforma-sdk/services/api-core/domainModel");
 const System = require("plataforma-sdk/services/api-core/system");
 const BaseDeployAction = require("../baseDeployAction");
-const uuid = require("uuid/v4");
-var yaml = require('js-yaml');
 
 module.exports = class DeployAppAction extends BaseDeployAction {
     constructor(appInstance) {
@@ -23,24 +19,6 @@ module.exports = class DeployAppAction extends BaseDeployAction {
     }
     deploy(_env) {
         this.saveSystem(_env).then(this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(actualPath)));
-    }
-
-    getDomainSchema() {
-        return new Promise((resolve,reject)=>{
-            var actualPath = shell.pwd();
-            var path = os.homedir()+"/installed_plataforma/domain_schema";
-            if (fs.existsSync(path)){
-                shell.cd(path);
-                shell.exec("git pull");
-            }else{
-                shell.rm("-rf",path);
-                shell.mkdir(path);
-                shell.cd(path);
-                shell.cd(" ..");
-                shell.exec("git clone https://github.com/onsplatform/domain_schema.git");
-            }
-            resolve(actualPath);
-        })
     }
 
     saveSystem(env) {
@@ -67,7 +45,8 @@ module.exports = class DeployAppAction extends BaseDeployAction {
             shell.exec("pipenv install");
             shell.exec("pipenv install pyyaml");
             shell.exec("echo POSTGRES_HOST=localhost >.env");
-            shell.exec("pipenv run python manage.py import_data "+yamlPath+ " sager");
+            shell.exec("pipenv run python manage.py import_data "+yamlPath+ " sager --clear_before_import");
+            resolve();
         })
     }
 

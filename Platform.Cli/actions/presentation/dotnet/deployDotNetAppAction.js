@@ -104,38 +104,6 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
         return this.getDomainSchema(actualPath,files).then(([actualPath, mapNames]) => this.importDomainMap(actualPath, mapNames));
     }
 
-    getDomainSchema(actualPath,mapNames) {
-        return new Promise((resolve, reject) => {
-            var path = os.homedir() + "/installed_plataforma/domain_schema";
-            if (fs.existsSync(path)) {
-                shell.cd(path);
-                shell.exec("git pull");
-            } else {
-                shell.rm("-rf", path);
-                shell.mkdir(path);
-                shell.cd(path);
-                shell.cd(" ..");
-                shell.exec("git clone https://github.com/onsplatform/domain_schema.git");
-            }
-            resolve([actualPath, mapNames]);
-        })
-    }
-
-    importDomainMap(actualPath, mapNames) {
-        const mapName = mapNames[0];
-        return new Promise((resolve, reject) => {
-            var path = os.homedir() + "/installed_plataforma/domain_schema";
-            shell.cd(path);
-            shell.exec("pip install pipenv");
-            shell.exec("pipenv install");
-            shell.exec("set POSTGRES_HOST=localhost");
-            shell.exec("pipenv install pyyaml");
-            shell.exec("echo POSTGRES_HOST=localhost >.env");
-            shell.exec("pipenv run python manage.py import_map " + actualPath + "/" + mapName + " sager " + mapName.split(".")[0]);
-            resolve();
-        })
-    }
-
     uploadMetadata(env) {
         var promise = this.getFiles(env, "Metadados", (ctx, v) => this.processMetadata(ctx, v));
         return promise;
