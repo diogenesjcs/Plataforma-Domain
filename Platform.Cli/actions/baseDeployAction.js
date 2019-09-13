@@ -128,6 +128,10 @@ module.exports = class BaseDeployAction{
         console.log("Importing maps.");
         return new Promise((resolve, reject) => {
             try {
+                if(!mapNames || mapNames.length==0){
+                    console.log("No Map found, skipping map importing.")
+                    resolve();
+                }
                 const mapName = mapNames[0];
                 var path = os.homedir() + "/installed_plataforma/domain_schema";
                 shell.cd(path);
