@@ -63,7 +63,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
             shell.exec("pipenv --python 3.7 install");
             shell.exec("pipenv --python 3.7 install pyyaml");
             shell.exec("echo POSTGRES_HOST=localhost >.env");
-            shell.exec("pipenv --python 3.7 run python manage.py import_data "+yamlPath+ " sager");
+            shell.exec("pipenv run python manage.py import_data "+yamlPath+ " sager");
         })
     }
 
