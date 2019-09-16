@@ -21,6 +21,24 @@ module.exports = class DeployAppAction extends BaseDeployAction {
         this.saveSystem(_env).then(this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(actualPath)));
     }
 
+    getDomainSchema() {
+        return new Promise((resolve,reject)=>{
+            var actualPath = shell.pwd();
+            var path = os.homedir()+"/installed_plataforma/domain_schema";
+            if (fs.existsSync(path)){
+                shell.cd(path);
+                shell.exec("git pull");
+            }else{
+                shell.rm("-rf",path);
+                shell.mkdir(path);
+                shell.cd(path);
+                shell.cd(" ..");
+                shell.exec("git clone https://github.com/onsplatform/domain_schema.git");
+            }
+            resolve(actualPath);
+        })
+    }
+
     saveSystem(env) {
         return new Promise((resolve,reject)=>{
         var systemCore  = new System(env.apiCore)
@@ -41,12 +59,11 @@ module.exports = class DeployAppAction extends BaseDeployAction {
             var yamlPath = actualPath+"/Dominio";
             var path = os.homedir()+"/installed_plataforma/domain_schema";
             shell.cd(path);
-            shell.exec("pip install pipenv");
-            shell.exec("pipenv install");
-            shell.exec("pipenv install pyyaml");
+            shell.exec("pip3 install pipenv");
+            shell.exec("pipenv --python 3.7 install");
+            shell.exec("pipenv --python 3.7 install pyyaml");
             shell.exec("echo POSTGRES_HOST=localhost >.env");
-            shell.exec("pipenv run python manage.py import_data "+yamlPath+ " sager --clear_before_import");
-            resolve();
+            shell.exec("pipenv --python 3.7 run python manage.py import_data "+yamlPath+ " sager");
         })
     }
 
