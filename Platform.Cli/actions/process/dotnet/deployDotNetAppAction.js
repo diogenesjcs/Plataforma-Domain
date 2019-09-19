@@ -21,7 +21,8 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 .then(context => this.registerApp(context));
         }
         prep = prep.then(context => this.uploadMaps(context))
-            .then(context => this.uploadMetadata(context));
+            .then(context => this.uploadMetadata(context))
+            .then(context => this.uploadMapsDomain(context));
         prep.then(this.finalize).catch(this.onError);
     }
 
@@ -29,7 +30,7 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
         var promise = new Promise((resolve, reject) => {
             console.log("Preparing Deploy");
             var path = os.homedir() + "/installed_plataforma";
-            var fullPath = path+"/apps/"+env.conf.app.version+"_"+env.conf.app.id;
+            var fullPath = path + "/apps/" + env.conf.app.version + "_" + env.conf.app.id;
             env.conf.fullPath = fullPath;
             env.conf.path = path;
             env.conf.appPath = process.cwd();
@@ -46,13 +47,13 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 var dest = env.conf.fullPath;
 
                 console.log("Copying Files");
-				
+
                 shell.rm("-rf", dest);
                 shell.mkdir("-p", dest);
-								
-                shell.cp("-R",source+"/Mapa", dest + "/Mapa");
-                shell.cp("-R",source+"/Metadados", dest + "/Metadados");
-                shell.cp(source+"/Dockerfile", dest);
+
+                shell.cp("-R", source + "/Mapa", dest + "/Mapa");
+                shell.cp("-R", source + "/Metadados", dest + "/Metadados");
+                shell.cp(source + "/Dockerfile", dest);
 
                 resolve(env);
             } catch (e) {
@@ -70,11 +71,11 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 let consoleAppName = env.conf.app.name;
 
                 console.log("Publish Project. Dest: " + dest);
-                
-				var cmdPublish = `dotnet publish ${source}/Process/${consoleAppName}.Process/${consoleAppName}.Process.csproj -o ${dest}/Process`; 
+
+                var cmdPublish = `dotnet publish ${source}/Process/${consoleAppName}.Process/${consoleAppName}.Process.csproj -o ${dest}/Process`;
                 console.log(cmdPublish);
                 shell.exec(cmdPublish);
-				
+
                 resolve(env);
             } catch (e) {
                 reject(e);
@@ -92,6 +93,15 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
         return promise;
     }
 
+    uploadMapsDomain(env) {
+        var pathMap = env.conf.appPath + "/Mapa/";
+        var fileList = shell.ls(pathMap);
+        return this.importMapToDomain(pathMap, fileList);
+    }
+
+    importMapToDomain(actualPath, files) {
+        return this.getDomainSchema(actualPath, files).then(([actualPath, mapNames]) => this.importDomainMap(actualPath, mapNames));
+    }
     processMetadata(env, metadata) {
         if (metadata.name.indexOf(".yaml") > 0 || metadata.name.indexOf(".yml") > 0) {
             return this.processOperations(env, metadata);
@@ -141,7 +151,7 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
                 operation.event_out = `${operation.name}.done`;
                 operation.image = this.docker.getContainer(env);
                 env.image = operation.image;
-                this.saveOperationCore(env,operation).then((c)=>{
+                this.saveOperationCore(env, operation).then((c) => {
                     resolve(env);
                 })
             } catch (e) {
@@ -165,20 +175,20 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
             this.docker.build(env, process.tag).then((r) => {
                 //console.log("Docker publish...");
                 //this.docker.publish(env, process.tag).then(() => {
-                    this.saveProcessToCore(env, process).then(() => {
-                        if (env.conf.app.type === "presentation"){
-                            env.docker = {port:"8087"};
-                            console.log("presentation app should start app");
-                            this.docker.rm(env).then(()=>{
-                                env.variables = {};
-                                env.variables["API_MODE"] = true;
-                                env.variables["SYSTEM_ID"] = env.conf.solution.id;
-                                this.docker.run(env, process.tag).then(r => resolve(env));
-                            });
-                        }else{
-                            resolve(env);
-                        }
-                    }).catch(reject);
+                this.saveProcessToCore(env, process).then(() => {
+                    if (env.conf.app.type === "presentation") {
+                        env.docker = { port: "8087" };
+                        console.log("presentation app should start app");
+                        this.docker.rm(env).then(() => {
+                            env.variables = {};
+                            env.variables["API_MODE"] = true;
+                            env.variables["SYSTEM_ID"] = env.conf.solution.id;
+                            this.docker.run(env, process.tag).then(r => resolve(env));
+                        });
+                    } else {
+                        resolve(env);
+                    }
+                }).catch(reject);
                 //});
             }).catch(reject);
         });

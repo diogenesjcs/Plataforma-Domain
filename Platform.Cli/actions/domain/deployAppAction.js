@@ -36,7 +36,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
                     console.log("App deployed");
                 }
             });
-        });
+        }).then(this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(actualPath)));
     }
     createDockerContainer(env) {
         return this.docker.compileDockerFile(env).then(() => {
@@ -111,6 +111,38 @@ module.exports = class DeployAppAction extends BaseDeployAction {
                 }).catch(reject);
             })
         });
+    }
+
+    importDomainMetadata(actualPath) {
+        return new Promise((resolve,reject)=>{
+            var yamlPath = actualPath+"/Dominio";
+            var path = os.homedir()+"/installed_plataforma/domain_schema";
+            shell.cd(path);
+            shell.exec("pip3 install pipenv");
+            shell.exec("pipenv --python 3.7 install");
+            shell.exec("pipenv --python 3.7 install pyyaml");
+            shell.exec("echo POSTGRES_HOST=localhost >.env");
+            shell.exec("pipenv run python manage.py import_data "+yamlPath+ " sager");
+            return resolve();
+        })
+    }
+
+    getDomainSchema() {
+        return new Promise((resolve,reject)=>{
+            var actualPath = shell.pwd();
+            var path = os.homedir()+"/installed_plataforma/domain_schema";
+            if (fs.existsSync(path)){
+                shell.cd(path);
+                shell.exec("git pull");
+            }else{
+                shell.rm("-rf",path);
+                shell.mkdir(path);
+                shell.cd(path);
+                shell.cd(" ..");
+                shell.exec("git clone https://github.com/onsplatform/domain_schema.git");
+            }
+            resolve(actualPath);
+        })
     }
 
 
