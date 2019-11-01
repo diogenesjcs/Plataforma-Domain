@@ -18,7 +18,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
         this.compiler = new CompileAppAction(appInstance);
     }
     deploy(_env) {
-        this.saveSystem(_env).then(this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(actualPath)));
+        this.saveSystem(_env).then(this.getDomainSchema().then((actualPath)=>this.importDomainMetadata(_env,actualPath)));
     }
 
     getDomainSchema() {
@@ -54,7 +54,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
         });
     }
 
-    importDomainMetadata(actualPath) {
+    importDomainMetadata(_env,actualPath) {
         return new Promise((resolve,reject)=>{
             var yamlPath = actualPath+"/Dominio";
             var path = os.homedir()+"/installed_plataforma/domain_schema";
@@ -62,7 +62,9 @@ module.exports = class DeployAppAction extends BaseDeployAction {
             shell.exec("pip3 install pipenv");
             shell.exec("pipenv --python 3.7 install");
             shell.exec("pipenv --python 3.7 install pyyaml");
-            shell.exec("echo POSTGRES_HOST=localhost >.env");
+            if(_env.apiCore.host==="localhost"){
+                shell.exec("echo POSTGRES_HOST=localhost >.env");
+            }
             shell.exec("pipenv run python manage.py import_data "+yamlPath+ " sager");
         })
     }

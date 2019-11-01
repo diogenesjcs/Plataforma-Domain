@@ -97,11 +97,11 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
     uploadMapsDomain(env) {
         var pathMap = env.conf.appPath + "/Mapa/";
         var fileList = shell.ls(pathMap);
-        return this.importMapToDomain(pathMap,fileList);
+        return this.importMapToDomain(env,pathMap,fileList);
     }
 
-    importMapToDomain(actualPath,files) {
-        return this.getDomainSchema(actualPath,files).then(([actualPath, mapNames]) => this.importDomainMap(actualPath, mapNames));
+    importMapToDomain(env,actualPath,files) {
+        return this.getDomainSchema(actualPath,files).then(([actualPath, mapNames]) => this.importDomainMap(env,actualPath, mapNames));
     }
 
     uploadMetadata(env) {

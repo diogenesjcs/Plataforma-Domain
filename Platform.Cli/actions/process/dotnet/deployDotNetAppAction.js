@@ -99,8 +99,8 @@ module.exports = class DeployProcessAppAction extends BaseDeployAction {
         return this.importMapToDomain(pathMap, fileList);
     }
 
-    importMapToDomain(actualPath, files) {
-        return this.getDomainSchema(actualPath, files).then(([actualPath, mapNames]) => this.importDomainMap(actualPath, mapNames));
+    importMapToDomain(env,actualPath, files) {
+        return this.getDomainSchema(actualPath, files).then(([actualPath, mapNames]) => this.importDomainMap(env,actualPath, mapNames));
     }
     processMetadata(env, metadata) {
         if (metadata.name.indexOf(".yaml") > 0 || metadata.name.indexOf(".yml") > 0) {

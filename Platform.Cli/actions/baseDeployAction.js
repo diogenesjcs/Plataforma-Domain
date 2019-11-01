@@ -124,13 +124,13 @@ module.exports = class BaseDeployAction{
         })
     }
 
-    importDomainMap(actualPath, mapNames) {
+    importDomainMap(env,actualPath, mapNames) {
         console.log("Importing maps.");
         return new Promise((resolve, reject) => {
             try {
                 if(!mapNames || mapNames.length==0){
                     console.log("No Map found, skipping map importing.")
-                    resolve();
+                    return resolve();
                 }
                 const mapName = mapNames[0];
                 var path = os.homedir() + "/installed_plataforma/domain_schema";
@@ -139,7 +139,9 @@ module.exports = class BaseDeployAction{
                 shell.exec("pipenv install");
                 shell.exec("set POSTGRES_HOST=localhost");
                 shell.exec("pipenv install pyyaml");
-                shell.exec("echo POSTGRES_HOST=localhost >.env");
+                if(env.apiCore.host==="localhost"){
+                    shell.exec("echo POSTGRES_HOST=localhost >.env");
+                }
                 shell.exec("pipenv run python manage.py import_map " + actualPath + "/" + mapName + " sager " + mapName.split(".")[0]);
                 resolve();
             }
