@@ -62,6 +62,7 @@ module.exports = class DeployAppAction extends BaseDeployAction {
             shell.exec("pip3 install pipenv");
             shell.exec("pipenv --python 3.7 install");
             shell.exec("pipenv --python 3.7 install pyyaml");
+            shell.exec("pipenv install setuptools");
             if(_env.apiCore.host==="localhost"){
                 shell.exec("echo POSTGRES_HOST=localhost >.env");
             }
