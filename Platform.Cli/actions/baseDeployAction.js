@@ -138,6 +138,7 @@ module.exports = class BaseDeployAction{
                 shell.exec("pip install pipenv");
                 shell.exec("pipenv install");
                 shell.exec("set POSTGRES_HOST=localhost");
+                shell.exec("pipenv install setuptools");
                 shell.exec("pipenv install pyyaml");
                 if(env.apiCore.host==="localhost"){
                     shell.exec("echo POSTGRES_HOST=localhost >.env");
